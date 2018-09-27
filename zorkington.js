@@ -80,9 +80,9 @@ class Thing {
   }
   updateStatus() {
     console.log(this.canStatusBeChanged());
-    if(this.dependsOn){
-      console.log(this.dependsOn.status);
-    }
+    // if(this.dependsOn){
+    //   console.log(this.dependsOn.status);
+    // }
 
     if (this.canStatusBeChanged() === false) {
       console.log(this.message[0]);
