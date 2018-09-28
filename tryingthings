@@ -1,0 +1,54 @@
+/*
+
+class Thing {
+    action:  
+    message
+    error
+    take() = {
+
+    }
+    
+
+}
+
+
+
+
+door = new Thing
+    action: open
+    message: "Door is locked"
+    error: I dont understand 
+    take(): 'cant touch dis'
+
+door.action
+door.message
+
+
+sign = new Thing
+    actino: read
+    message: "slkdfjldg"
+    take(): { output blah
+            addToInventory()
+
+    }
+
+   
+    
+
+playGame(){
+   async await input.action  === thing.action  
+    input.name = thing.name
+
+    if thing.action :), then
+    then output thing."message"
+    if thing.action :(  then output error message. thing.error
+}
+
+
+
+"read sign" ===> 
+"open door" ===> "door is locked"
+
+
+
+*/
