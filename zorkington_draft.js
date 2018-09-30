@@ -17,7 +17,7 @@ class Room {
       }
     }
   }
-}
+};
 class Player {
   constructor(status, location, inventory = []) {
     this.status = status;
@@ -35,14 +35,14 @@ class Player {
     console.log("You are carrying:")
     if(this.inventory.length < 1){
       console.log("nothing.")
-    } else{
+    } else {
       for (let item of this.inventory) {
         console.log(item.name);
       }
     }
+    console.log("\n");
   }
-  // checking if user input contains direction words for the room ('north...')
-  // can we move to room? if true, moves room
+  // returns true if user can move in a given direction and updates user's location
   checkRoom(input){
     let newLocation;
     for (let direction in this.location.connections) {
@@ -59,9 +59,9 @@ class Player {
     } 
     return false;
   }
-  // checks if item exists 
-  // checks if action exists
-  // returns true if both item and action are entered 
+  // checks if input contains item and action associated with that item
+  // returns true if both item and action are entered, else error message
+  // definitely need to refactor this..
   isInputValid(input) {
     if(input.includes("inventory")){
       this.displayInventory();
@@ -86,6 +86,8 @@ class Player {
       return false;
     }
   }
+  // outputs message to user depending on user's action on item
+  // shifts message associated with item, and updates status of item
   handleInput(item, array){   
     if(!item.canStatusBeChanged()){
       console.log(item.message[0])
@@ -94,33 +96,35 @@ class Player {
         item.message.shift()
       }
       console.log(item.message[0]);
-
       if(item.message.length >1){
         item.updateStatus(item);
       }
     }
   }
-  // adds item to user.inventory, and removes item from room
+  // adds item to user's inventory, removes item from room, updates allowed words 
   addToInventory(item){
     item.action.splice(0, 2, 'drop', 'leave');
-    console.log(item.action);
+    //console.log(item.action);
     this.inventory.push(this.location.inventory.pop());
-    // remove add words
     console.log(`${item.name} added to your inventory`);
+    //item.message.unshift(`${item.name} is ${item.status[1]}`);
   }
+  // drops item from user's inventory, adds item to room, updates allowed words, shifts status
   dropFromInventory(item){
     item.action.splice(0, 2, 'add', 'take');
-    console.log(item.action);
-    item.status.unshift["picked up"]
+    //console.log(item.action);
     this.location.inventory.push(this.inventory.pop());
     console.log(`${item.name} dropped from your inventory`);
+    //item.message.shift(`${item.name} is ${item.status[1]}`);
+
+
   }
+  // error message when doesn't recognize input "Sorry...!"
   sorry(verb) {
-    console.log(`I don't know how to ${verb}.`);
+    console.log(`Sorry, I don't know how to ${verb}.`);
   }
   
 };
-
 
 class Thing {
   constructor(name, status, action, message, error, otherThing = null) {
@@ -138,6 +142,7 @@ class Thing {
       }
     }
   }
+  // if an item is locked, user has not interacted with it yet (or it has been dropped from inventory)
   isLocked() {
     if (this.status.length === 1){
       return false;
@@ -145,6 +150,7 @@ class Thing {
       return true;
     }
   }
+  // returns true if the item's dependsOn item is unlocked, false if locked
   canStatusBeChanged() {
     if(this.isLocked()){
       if(this.dependsOn && this.dependsOn.isLocked()){
@@ -154,6 +160,7 @@ class Thing {
     }
     return false;
   }
+  // shifts status and message of item
   updateStatus() {
     this.status.shift();
     this.message.shift();
@@ -172,18 +179,18 @@ const sign = new Thing(
   "That would be selfish. How will other students find their way?"
 );
 const lock = new Thing(
-"12345", 
+"enter", 
 ["locked", "unlocked"], 
-["code", "enter", "key"],
+["12345"],
 ["Bzzzzt! The door is still locked!", "Success! The door unlocks!.", "It is already unlocked!"], 
-"Wrong code. Try again.",
+"Bzzzzt! The door is still locked.",
 sign);
 
 const door = new Thing(
   "door",
   ["closed", "opened"],
   ["open"],
-  ["The door is locked.", "Success! The door opens. There's a foyer ahead of you to the north", "The door is already open!"],
+  ["The door is locked. There is a keypad on the door handle", "Success! The door opens. There's a foyer ahead of you just inside.", "The door is already open!"],
   " ",
   lock
 );
@@ -192,26 +199,63 @@ const paper = new Thing(
   "paper",
   ["not picked up", "picked up"],
   ["take", "add", "read"],
-  ["You pick up the paper and leaf through it looking for comics and ignoring the articles, just like everybody else does."],
+  ["You pick up the paper and leaf through it looking for comics and ignoring the articles, just like everybody else does.", "You've read today's paper."],
   " ",
 );
+const coffee = new Thing(
+  "coffee",
+  ["in Muddy's", "with Alex"],
+  ["add", "take", "buy", "get"],
+  ["The coffee at Muddy's is worth the $4.00", "Alex says Thank You :)", "You already got coffee!"],
+  "",
+);
+const alexC = new Thing(
+  "alex",
+  ["speaking gibberish", "speaking clearly"],
+  ["caffeinate", "give", "coffee", "help"],
+  ["Loopeu doopeu shoopeu loo. Alex C really needs coffee. You don't have any coffee", "Alex feels so much better after drinking coffee! You finally understand him. Now you can enjoy the lecture and feel less confused. (Maybe).", "Alex has had plenty of coffee."],
+  " ",
+  coffee,
+);
+const lecture = new Thing(
+  "lecture",
+  ["not attended", "attended"],
+  ["attend", "sit", "stand", "listen", "enjoy"],
+  ["Loopeu doopeu shoopeu loo. Alex is still speaking gibberish.", "Welcome to the lecture on how to write your own tests in Javascript!", "Are you learning anything?"],
+  " ",
+  alexC,
+)
+
+
 Foyer = new Room(
   "You are in a foyer. Or maybe it's an antechamber. Or a vestibule. Or an entryway. Or an atrium. Or a narthex. But let's forget all that fancy flatlander vocabulary, and just call it a foyer. In Vermont, this is pronounced 'FO-ee-yurr'. A copy of Seven Days lies in a corner.",
-  { north: null, south: null, east: null, west: null},
+  { },
   [paper]
 );
 
-// take-able items at end of array!
+// Note: put take-able items at end of array!
 MainSt182 = new Room(
   "182 Main St.\n You are standing on Main Street between Church and South Winooski. There is a door here. A keypad sits on the handle. On the door is a handwritten sign.",
-  { north: Foyer, south: null, east: null, west: null },
+  {inside : Foyer},
   [door, sign, lock],
   door
 );
 
+BurlingtonCodeAcademy = new Room(
+  "Burlington Code Academy.\n Alex C. speaks gibberish until he has a coffee from Muddy's",
+  {downstairs : Foyer },
+  [alexC, lecture],
+);
+
+
+MuddyWaters = new Room(
+  "Muddy Waters.\n ",
+  {west : MainSt182},
+  [coffee],
+)
+
 
 const user = new Player("good", MainSt182);
-// { food: null, weapons: null, misc: null }
 
 
 
@@ -221,8 +265,11 @@ ask = questionText =>
   });
 
 const startGame = async () => {
-  Foyer.connections.south = MainSt182;
+  Foyer.connections.outside = MainSt182;
+  Foyer.connections.upstairs = BurlingtonCodeAcademy;
+  MainSt182.connections.east = MuddyWaters;
 
+  // bug here - when enter an invalid direction - throws error
   console.log("You are here: " + user.location.description);
   console.log("\n");
   let input = await ask("> ");
@@ -244,8 +291,7 @@ handles input -- item action ("open door") - display message
 */
 
   if(user.checkRoom(inputArray)){
-    console.log("checking if can change room");
-//checks if input is valid, ie if action words match objects
+// checks if input is valid, ie if action words match objects
 // handles input - does appropriate action 
   } else if (user.isInputValid(inputArray)) {
       user.handleInput(item, inputArray);
